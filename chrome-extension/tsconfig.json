@@ -1,0 +1,21 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "lib": ["DOM", "ES2020"],
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@shared/*": ["../shared/src/*"]
+    },
+    "types": ["chrome", "node", "webextension-polyfill"]
+  },
+  "include": ["src/**/*", "../shared/src/**/*"],
+  "exclude": ["dist", "node_modules"]
+}
