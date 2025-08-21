@@ -1,0 +1,69 @@
+{
+  "manifest_version": 3,
+  "name": "NetPost - Cross-Platform Listing Manager",
+  "version": "1.0.0",
+  "description": "Efficiently manage inventory across multiple e-commerce marketplaces with AI-powered optimization",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "notifications",
+    "alarms"
+  ],
+  "host_permissions": [
+    "*://*.ebay.com/*",
+    "*://*.mercari.com/*",
+    "*://*.poshmark.com/*",
+    "*://*.facebook.com/*",
+    "*://*.depop.com/*",
+    "*://*.etsy.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.ebay.com/*",
+        "*://*.mercari.com/*",
+        "*://*.poshmark.com/*",
+        "*://*.facebook.com/marketplace/*",
+        "*://*.depop.com/*",
+        "*://*.etsy.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "NetPost",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html", "content.css"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "externally_connectable": {
+    "matches": [
+      "*://localhost:3000/*",
+      "*://*.netpost.app/*"
+    ]
+  }
+}
