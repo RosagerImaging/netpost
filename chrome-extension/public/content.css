@@ -1,0 +1,61 @@
+/* NetPost Content Script Styles */
+.netpost-checkbox {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+.netpost-checkbox:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+}
+
+.netpost-overlay {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* Selection highlight */
+.netpost-selected {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  border-radius: 4px !important;
+}
+
+/* Batch selection toolbar */
+.netpost-toolbar {
+  position: fixed !important;
+  top: 50px !important;
+  right: 10px !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+  z-index: 999999 !important;
+  display: none !important;
+}
+
+.netpost-toolbar.visible {
+  display: block !important;
+}
+
+.netpost-toolbar button {
+  background: #3b82f6 !important;
+  color: white !important;
+  border: none !important;
+  padding: 6px 12px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-size: 12px !important;
+  margin: 0 4px !important;
+}
+
+.netpost-toolbar button:hover {
+  background: #2563eb !important;
+}
+
+.netpost-toolbar button.secondary {
+  background: #6b7280 !important;
+}
+
+.netpost-toolbar button.secondary:hover {
+  background: #4b5563 !important;
+}
