@@ -13,8 +13,7 @@
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "webextension-polyfill": "^0.10.0",
-    "@netpost/shared": "workspace:*"
+    "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.245",
