@@ -19,8 +19,7 @@
     "crypto-js": "^4.1.0",
     "zod": "^3.22.0",
     "jsonwebtoken": "^9.0.0",
-    "bcryptjs": "^2.4.3",
-    "@netpost/shared": "workspace:*"
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.1.0",
