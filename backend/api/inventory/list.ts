@@ -58,7 +58,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Apply pagination
     query = query.range(offset, offset + parseInt(limit as string) - 1);
 
-    const { data: items, error, count } = await query;
+    const { data: items, error } = await query;
 
     if (error) {
       console.error('Database error:', error);
