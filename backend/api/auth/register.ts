@@ -1,12 +1,14 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { corsMiddleware } from '../../src/middleware/cors';
 import { handleError, ValidationError } from '../../src/middleware/errorHandler';
+import { authRateLimit } from '../../src/middleware/rateLimiting';
 import { supabaseAdmin } from '../../src/utils/database';
 import { generateJWT } from '../../src/utils/auth';
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!corsMiddleware(req, res)) return;
+  if (!authRateLimit(req, res)) return;
 
   if (req.method !== 'POST') {
     res.status(405).json({ success: false, error: 'Method not allowed' });
