@@ -1,0 +1,428 @@
+import { z } from 'zod';
+import { ItemCondition, Platform, ListingStatus } from '../types/inventory';
+export declare const DimensionsSchema: z.ZodObject<{
+    length: z.ZodNumber;
+    width: z.ZodNumber;
+    height: z.ZodNumber;
+}, "strip", z.ZodTypeAny, {
+    length: number;
+    width: number;
+    height: number;
+}, {
+    length: number;
+    width: number;
+    height: number;
+}>;
+export declare const InventoryItemSchema: z.ZodObject<{
+    id: z.ZodString;
+    title: z.ZodString;
+    description: z.ZodString;
+    images: z.ZodArray<z.ZodString, "many">;
+    sku: z.ZodString;
+    barcode: z.ZodOptional<z.ZodString>;
+    costBasis: z.ZodNumber;
+    retailPrice: z.ZodNumber;
+    quantityTotal: z.ZodNumber;
+    quantityAvailable: z.ZodNumber;
+    category: z.ZodString;
+    brand: z.ZodOptional<z.ZodString>;
+    condition: z.ZodNativeEnum<typeof ItemCondition>;
+    size: z.ZodOptional<z.ZodString>;
+    color: z.ZodOptional<z.ZodString>;
+    material: z.ZodOptional<z.ZodString>;
+    weight: z.ZodOptional<z.ZodNumber>;
+    dimensions: z.ZodOptional<z.ZodObject<{
+        length: z.ZodNumber;
+        width: z.ZodNumber;
+        height: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        length: number;
+        width: number;
+        height: number;
+    }, {
+        length: number;
+        width: number;
+        height: number;
+    }>>;
+    createdAt: z.ZodDate;
+    updatedAt: z.ZodDate;
+    listingGroupId: z.ZodOptional<z.ZodString>;
+    marketplaceListings: z.ZodArray<z.ZodLazy<z.ZodObject<{
+        id: z.ZodString;
+        inventoryItemId: z.ZodString;
+        platform: z.ZodNativeEnum<typeof Platform>;
+        platformListingId: z.ZodString;
+        platformEditUrl: z.ZodString;
+        platformViewUrl: z.ZodString;
+        status: z.ZodNativeEnum<typeof ListingStatus>;
+        quantity: z.ZodNumber;
+        price: z.ZodNumber;
+        listingDate: z.ZodDate;
+        lastUpdated: z.ZodDate;
+        performanceMetrics: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>;
+    }, "strip", z.ZodTypeAny, {
+        id: string;
+        status: ListingStatus;
+        platform: Platform;
+        quantity: number;
+        price: number;
+        inventoryItemId: string;
+        platformListingId: string;
+        platformEditUrl: string;
+        platformViewUrl: string;
+        listingDate: Date;
+        lastUpdated: Date;
+        performanceMetrics?: Record<string, any> | undefined;
+    }, {
+        id: string;
+        status: ListingStatus;
+        platform: Platform;
+        quantity: number;
+        price: number;
+        inventoryItemId: string;
+        platformListingId: string;
+        platformEditUrl: string;
+        platformViewUrl: string;
+        listingDate: Date;
+        lastUpdated: Date;
+        performanceMetrics?: Record<string, any> | undefined;
+    }>>, "many">;
+}, "strip", z.ZodTypeAny, {
+    id: string;
+    title: string;
+    description: string;
+    images: string[];
+    sku: string;
+    category: string;
+    condition: ItemCondition;
+    costBasis: number;
+    retailPrice: number;
+    quantityTotal: number;
+    quantityAvailable: number;
+    createdAt: Date;
+    updatedAt: Date;
+    marketplaceListings: {
+        id: string;
+        status: ListingStatus;
+        platform: Platform;
+        quantity: number;
+        price: number;
+        inventoryItemId: string;
+        platformListingId: string;
+        platformEditUrl: string;
+        platformViewUrl: string;
+        listingDate: Date;
+        lastUpdated: Date;
+        performanceMetrics?: Record<string, any> | undefined;
+    }[];
+    barcode?: string | undefined;
+    brand?: string | undefined;
+    size?: string | undefined;
+    color?: string | undefined;
+    material?: string | undefined;
+    weight?: number | undefined;
+    dimensions?: {
+        length: number;
+        width: number;
+        height: number;
+    } | undefined;
+    listingGroupId?: string | undefined;
+}, {
+    id: string;
+    title: string;
+    description: string;
+    images: string[];
+    sku: string;
+    category: string;
+    condition: ItemCondition;
+    costBasis: number;
+    retailPrice: number;
+    quantityTotal: number;
+    quantityAvailable: number;
+    createdAt: Date;
+    updatedAt: Date;
+    marketplaceListings: {
+        id: string;
+        status: ListingStatus;
+        platform: Platform;
+        quantity: number;
+        price: number;
+        inventoryItemId: string;
+        platformListingId: string;
+        platformEditUrl: string;
+        platformViewUrl: string;
+        listingDate: Date;
+        lastUpdated: Date;
+        performanceMetrics?: Record<string, any> | undefined;
+    }[];
+    barcode?: string | undefined;
+    brand?: string | undefined;
+    size?: string | undefined;
+    color?: string | undefined;
+    material?: string | undefined;
+    weight?: number | undefined;
+    dimensions?: {
+        length: number;
+        width: number;
+        height: number;
+    } | undefined;
+    listingGroupId?: string | undefined;
+}>;
+export declare const MarketplaceListingSchema: z.ZodObject<{
+    id: z.ZodString;
+    inventoryItemId: z.ZodString;
+    platform: z.ZodNativeEnum<typeof Platform>;
+    platformListingId: z.ZodString;
+    platformEditUrl: z.ZodString;
+    platformViewUrl: z.ZodString;
+    status: z.ZodNativeEnum<typeof ListingStatus>;
+    quantity: z.ZodNumber;
+    price: z.ZodNumber;
+    listingDate: z.ZodDate;
+    lastUpdated: z.ZodDate;
+    performanceMetrics: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>;
+}, "strip", z.ZodTypeAny, {
+    id: string;
+    status: ListingStatus;
+    platform: Platform;
+    quantity: number;
+    price: number;
+    inventoryItemId: string;
+    platformListingId: string;
+    platformEditUrl: string;
+    platformViewUrl: string;
+    listingDate: Date;
+    lastUpdated: Date;
+    performanceMetrics?: Record<string, any> | undefined;
+}, {
+    id: string;
+    status: ListingStatus;
+    platform: Platform;
+    quantity: number;
+    price: number;
+    inventoryItemId: string;
+    platformListingId: string;
+    platformEditUrl: string;
+    platformViewUrl: string;
+    listingDate: Date;
+    lastUpdated: Date;
+    performanceMetrics?: Record<string, any> | undefined;
+}>;
+export declare const CreateInventoryItemSchema: z.ZodObject<Omit<{
+    id: z.ZodString;
+    title: z.ZodString;
+    description: z.ZodString;
+    images: z.ZodArray<z.ZodString, "many">;
+    sku: z.ZodString;
+    barcode: z.ZodOptional<z.ZodString>;
+    costBasis: z.ZodNumber;
+    retailPrice: z.ZodNumber;
+    quantityTotal: z.ZodNumber;
+    quantityAvailable: z.ZodNumber;
+    category: z.ZodString;
+    brand: z.ZodOptional<z.ZodString>;
+    condition: z.ZodNativeEnum<typeof ItemCondition>;
+    size: z.ZodOptional<z.ZodString>;
+    color: z.ZodOptional<z.ZodString>;
+    material: z.ZodOptional<z.ZodString>;
+    weight: z.ZodOptional<z.ZodNumber>;
+    dimensions: z.ZodOptional<z.ZodObject<{
+        length: z.ZodNumber;
+        width: z.ZodNumber;
+        height: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        length: number;
+        width: number;
+        height: number;
+    }, {
+        length: number;
+        width: number;
+        height: number;
+    }>>;
+    createdAt: z.ZodDate;
+    updatedAt: z.ZodDate;
+    listingGroupId: z.ZodOptional<z.ZodString>;
+    marketplaceListings: z.ZodArray<z.ZodLazy<z.ZodObject<{
+        id: z.ZodString;
+        inventoryItemId: z.ZodString;
+        platform: z.ZodNativeEnum<typeof Platform>;
+        platformListingId: z.ZodString;
+        platformEditUrl: z.ZodString;
+        platformViewUrl: z.ZodString;
+        status: z.ZodNativeEnum<typeof ListingStatus>;
+        quantity: z.ZodNumber;
+        price: z.ZodNumber;
+        listingDate: z.ZodDate;
+        lastUpdated: z.ZodDate;
+        performanceMetrics: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>;
+    }, "strip", z.ZodTypeAny, {
+        id: string;
+        status: ListingStatus;
+        platform: Platform;
+        quantity: number;
+        price: number;
+        inventoryItemId: string;
+        platformListingId: string;
+        platformEditUrl: string;
+        platformViewUrl: string;
+        listingDate: Date;
+        lastUpdated: Date;
+        performanceMetrics?: Record<string, any> | undefined;
+    }, {
+        id: string;
+        status: ListingStatus;
+        platform: Platform;
+        quantity: number;
+        price: number;
+        inventoryItemId: string;
+        platformListingId: string;
+        platformEditUrl: string;
+        platformViewUrl: string;
+        listingDate: Date;
+        lastUpdated: Date;
+        performanceMetrics?: Record<string, any> | undefined;
+    }>>, "many">;
+}, "id" | "createdAt" | "updatedAt" | "marketplaceListings">, "strip", z.ZodTypeAny, {
+    title: string;
+    description: string;
+    images: string[];
+    sku: string;
+    category: string;
+    condition: ItemCondition;
+    costBasis: number;
+    retailPrice: number;
+    quantityTotal: number;
+    quantityAvailable: number;
+    barcode?: string | undefined;
+    brand?: string | undefined;
+    size?: string | undefined;
+    color?: string | undefined;
+    material?: string | undefined;
+    weight?: number | undefined;
+    dimensions?: {
+        length: number;
+        width: number;
+        height: number;
+    } | undefined;
+    listingGroupId?: string | undefined;
+}, {
+    title: string;
+    description: string;
+    images: string[];
+    sku: string;
+    category: string;
+    condition: ItemCondition;
+    costBasis: number;
+    retailPrice: number;
+    quantityTotal: number;
+    quantityAvailable: number;
+    barcode?: string | undefined;
+    brand?: string | undefined;
+    size?: string | undefined;
+    color?: string | undefined;
+    material?: string | undefined;
+    weight?: number | undefined;
+    dimensions?: {
+        length: number;
+        width: number;
+        height: number;
+    } | undefined;
+    listingGroupId?: string | undefined;
+}>;
+export declare const UpdateInventoryItemSchema: z.ZodObject<{
+    title: z.ZodOptional<z.ZodString>;
+    description: z.ZodOptional<z.ZodString>;
+    images: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+    sku: z.ZodOptional<z.ZodString>;
+    barcode: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    category: z.ZodOptional<z.ZodString>;
+    brand: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    condition: z.ZodOptional<z.ZodNativeEnum<typeof ItemCondition>>;
+    size: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    color: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    material: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+    weight: z.ZodOptional<z.ZodOptional<z.ZodNumber>>;
+    dimensions: z.ZodOptional<z.ZodOptional<z.ZodObject<{
+        length: z.ZodNumber;
+        width: z.ZodNumber;
+        height: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        length: number;
+        width: number;
+        height: number;
+    }, {
+        length: number;
+        width: number;
+        height: number;
+    }>>>;
+    costBasis: z.ZodOptional<z.ZodNumber>;
+    retailPrice: z.ZodOptional<z.ZodNumber>;
+    quantityTotal: z.ZodOptional<z.ZodNumber>;
+    quantityAvailable: z.ZodOptional<z.ZodNumber>;
+    listingGroupId: z.ZodOptional<z.ZodOptional<z.ZodString>>;
+}, "strip", z.ZodTypeAny, {
+    title?: string | undefined;
+    description?: string | undefined;
+    images?: string[] | undefined;
+    sku?: string | undefined;
+    barcode?: string | undefined;
+    category?: string | undefined;
+    brand?: string | undefined;
+    condition?: ItemCondition | undefined;
+    size?: string | undefined;
+    color?: string | undefined;
+    material?: string | undefined;
+    weight?: number | undefined;
+    dimensions?: {
+        length: number;
+        width: number;
+        height: number;
+    } | undefined;
+    costBasis?: number | undefined;
+    retailPrice?: number | undefined;
+    quantityTotal?: number | undefined;
+    quantityAvailable?: number | undefined;
+    listingGroupId?: string | undefined;
+}, {
+    title?: string | undefined;
+    description?: string | undefined;
+    images?: string[] | undefined;
+    sku?: string | undefined;
+    barcode?: string | undefined;
+    category?: string | undefined;
+    brand?: string | undefined;
+    condition?: ItemCondition | undefined;
+    size?: string | undefined;
+    color?: string | undefined;
+    material?: string | undefined;
+    weight?: number | undefined;
+    dimensions?: {
+        length: number;
+        width: number;
+        height: number;
+    } | undefined;
+    costBasis?: number | undefined;
+    retailPrice?: number | undefined;
+    quantityTotal?: number | undefined;
+    quantityAvailable?: number | undefined;
+    listingGroupId?: string | undefined;
+}>;
+export declare const CrossListingRequestSchema: z.ZodObject<{
+    sourcePlatform: z.ZodNativeEnum<typeof Platform>;
+    targetPlatforms: z.ZodArray<z.ZodNativeEnum<typeof Platform>, "many">;
+    inventoryItems: z.ZodArray<z.ZodString, "many">;
+    optimizeSEO: z.ZodDefault<z.ZodBoolean>;
+    generateDescriptions: z.ZodDefault<z.ZodBoolean>;
+}, "strip", z.ZodTypeAny, {
+    sourcePlatform: Platform;
+    targetPlatforms: Platform[];
+    inventoryItems: string[];
+    optimizeSEO: boolean;
+    generateDescriptions: boolean;
+}, {
+    sourcePlatform: Platform;
+    targetPlatforms: Platform[];
+    inventoryItems: string[];
+    optimizeSEO?: boolean | undefined;
+    generateDescriptions?: boolean | undefined;
+}>;
