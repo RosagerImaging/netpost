@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ItemCondition, Platform, ListingStatus, InventoryStatus } from '../types/inventory';
+import { ItemCondition, Platform, ListingStatus } from '../types/inventory';
 
 export const DimensionsSchema = z.object({
   length: z.number().positive(),

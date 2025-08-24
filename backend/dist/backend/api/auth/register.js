@@ -6,14 +6,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = handler;
 const cors_1 = require("../../src/middleware/cors");
 const errorHandler_1 = require("../../src/middleware/errorHandler");
-const rateLimiting_1 = require("../../src/middleware/rateLimiting");
+const securityEnhancements_1 = require("../../src/middleware/securityEnhancements");
+const securityEnhancements_2 = require("../../src/middleware/securityEnhancements");
 const database_1 = require("../../src/utils/database");
 const auth_1 = require("../../src/utils/auth");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 async function handler(req, res) {
     if (!(0, cors_1.corsMiddleware)(req, res))
         return;
-    if (!(0, rateLimiting_1.authRateLimit)(req, res))
+    if (!(0, securityEnhancements_2.validateInput)(req, res))
+        return;
+    if (!(0, securityEnhancements_1.registrationRateLimit)(req, res))
         return;
     if (req.method !== 'POST') {
         res.status(405).json({ success: false, error: 'Method not allowed' });
@@ -24,8 +27,25 @@ async function handler(req, res) {
         if (!email || !password) {
             throw new errorHandler_1.ValidationError('Email and password are required');
         }
+        // Enhanced email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            throw new errorHandler_1.ValidationError('Invalid email format');
+        }
+        // Enhanced password validation
         if (password.length < 8) {
             throw new errorHandler_1.ValidationError('Password must be at least 8 characters');
+        }
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+        if (!passwordRegex.test(password)) {
+            throw new errorHandler_1.ValidationError('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
+        }
+        // Validate name inputs if provided
+        if (firstName && (firstName.length > 50 || !/^[a-zA-Z\s'-]+$/.test(firstName))) {
+            throw new errorHandler_1.ValidationError('Invalid first name format');
+        }
+        if (lastName && (lastName.length > 50 || !/^[a-zA-Z\s'-]+$/.test(lastName))) {
+            throw new errorHandler_1.ValidationError('Invalid last name format');
         }
         // Check if user already exists
         const { data: existingUser } = await database_1.supabaseAdmin
@@ -80,12 +100,13 @@ async function handler(req, res) {
             ai_description_enabled: true,
             updated_at: new Date().toISOString()
         });
-        // Generate JWT
-        const token = (0, auth_1.generateJWT)(newUser.id);
+        // Generate token pair
+        const { accessToken, refreshToken } = (0, auth_1.generateTokenPair)(newUser.id);
         res.status(201).json({
             success: true,
             data: {
-                token,
+                accessToken,
+                refreshToken,
                 user: {
                     id: newUser.id,
                     email: newUser.email,

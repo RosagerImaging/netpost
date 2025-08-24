@@ -104,7 +104,8 @@ const PopupApp: React.FC = () => {
   };
 
   const openDashboard = () => {
-    browser.tabs.create({ url: 'https://app.netpost.com' });
+    const dashboardUrl = process.env.REACT_APP_APP_URL || 'https://netpost.app';
+    browser.tabs.create({ url: dashboardUrl });
   };
 
   const getSupportedPlatform = (hostname: string): string | null => {
