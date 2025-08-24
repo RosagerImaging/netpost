@@ -70,29 +70,245 @@ browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 });
 
-// Placeholder functions for core functionality
+// Core functionality implementations
 async function handleGetListings(data: any) {
   console.log('Getting listings:', data);
-  // TODO: Implement listing retrieval logic
-  return { success: true, listings: [] };
+  
+  try {
+    const userToken = await getUserToken();
+    if (!userToken) {
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    const response = await fetch(`${getApiUrl()}/inventory/list`, {
+      headers: {
+        'Authorization': `Bearer ${userToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return { success: true, listings: result.data?.items || [] };
+  } catch (error) {
+    console.error('Failed to get listings:', error);
+    return { success: false, error: (error as Error).message };
+  }
 }
 
 async function handleCrossListing(data: any) {
   console.log('Cross-listing items:', data);
-  // TODO: Implement cross-listing logic
-  return { success: true, message: 'Cross-listing initiated' };
+  
+  try {
+    const userToken = await getUserToken();
+    if (!userToken) {
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    // Convert selected items to inventory items or create new ones
+    const inventoryItems = await processSelectedItems(data.items, userToken);
+    
+    if (inventoryItems.length === 0) {
+      return { success: false, error: 'No valid items to cross-list' };
+    }
+
+    // Determine source platform from first item
+    const sourcePlatform = data.items[0]?.platform || 'unknown';
+    
+    // Filter out source platform from target platforms
+    const targetPlatforms = data.targetPlatforms.filter((p: string) => p !== sourcePlatform);
+    
+    if (targetPlatforms.length === 0) {
+      return { success: false, error: 'No target platforms selected' };
+    }
+
+    // Create cross-listing request
+    const response = await fetch(`${getApiUrl()}/crosslisting/create`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${userToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sourcePlatform,
+        targetPlatforms,
+        inventoryItems: inventoryItems.map(item => item.id),
+        optimizeSEO: true,
+        generateDescriptions: false
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Cross-listing request failed: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    // Show notification
+    if (result.success) {
+      showNotification('Cross-listing initiated', `Started cross-listing ${inventoryItems.length} items to ${targetPlatforms.length} platforms`);
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Cross-listing failed:', error);
+    return { success: false, error: (error as Error).message };
+  }
 }
 
 async function handleSyncInventory() {
   console.log('Syncing inventory');
-  // TODO: Implement inventory sync logic
-  return { success: true, message: 'Inventory synced' };
+  
+  try {
+    const userToken = await getUserToken();
+    if (!userToken) {
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    // Get inventory metrics to check sync status
+    const response = await fetch(`${getApiUrl()}/inventory/metrics`, {
+      headers: {
+        'Authorization': `Bearer ${userToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Sync request failed: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return { success: true, data: result.data, message: 'Inventory synced successfully' };
+  } catch (error) {
+    console.error('Inventory sync failed:', error);
+    return { success: false, error: (error as Error).message };
+  }
 }
 
 async function handleSEOAnalysis(data: any) {
   console.log('Analyzing SEO:', data);
-  // TODO: Implement SEO analysis logic
-  return { success: true, analysis: {} };
+  
+  try {
+    const userToken = await getUserToken();
+    if (!userToken) {
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    const { inventoryItemId, platform } = data;
+    
+    const response = await fetch(`${getApiUrl()}/seo/analyze`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${userToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ inventoryItemId, platform })
+    });
+
+    if (!response.ok) {
+      throw new Error(`SEO analysis failed: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return { success: true, analysis: result.data };
+  } catch (error) {
+    console.error('SEO analysis failed:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+// Helper functions
+async function getUserToken(): Promise<string | null> {
+  const result = await browser.storage.sync.get('userToken');
+  return result.userToken || null;
+}
+
+function getApiUrl(): string {
+  // Use environment variable or fall back to production URL
+  const apiUrl = process.env.REACT_APP_API_URL || 'https://netpost.app/api';
+  
+  // In development, use localhost if environment variable is not set
+  if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_API_URL) {
+    return 'http://localhost:3000/api';
+  }
+  
+  return apiUrl;
+}
+
+async function processSelectedItems(selectedItems: any[], userToken: string): Promise<any[]> {
+  const inventoryItems = [];
+  
+  for (const item of selectedItems) {
+    try {
+      // Check if item already exists in inventory (by title or URL)
+      const existingResponse = await fetch(`${getApiUrl()}/inventory/list?search=${encodeURIComponent(item.title)}`, {
+        headers: {
+          'Authorization': `Bearer ${userToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (existingResponse.ok) {
+        const existingResult = await existingResponse.json();
+        const existingItem = existingResult.data?.items?.find((inv: any) => 
+          inv.title.toLowerCase().includes(item.title.toLowerCase()) ||
+          inv.title.toLowerCase() === item.title.toLowerCase()
+        );
+        
+        if (existingItem) {
+          inventoryItems.push(existingItem);
+          continue;
+        }
+      }
+      
+      // Create new inventory item
+      const newItemData = {
+        title: item.title,
+        description: `Imported from ${item.platform}: ${item.title}`,
+        images: item.image ? [item.image] : [],
+        sku: `IMP-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+        costBasis: 0,
+        retailPrice: parseFloat(item.price.replace(/[^0-9.]/g, '')) || 0,
+        quantityTotal: 1,
+        quantityAvailable: 1,
+        category: 'other',
+        condition: 'good',
+        status: 'draft'
+      };
+      
+      const createResponse = await fetch(`${getApiUrl()}/inventory/create`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${userToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newItemData)
+      });
+      
+      if (createResponse.ok) {
+        const createResult = await createResponse.json();
+        if (createResult.success) {
+          inventoryItems.push(createResult.data.item);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to process item:', item, error);
+    }
+  }
+  
+  return inventoryItems;
+}
+
+function showNotification(title: string, message: string) {
+  browser.notifications.create({
+    type: 'basic',
+    iconUrl: '/icons/icon48.png',
+    title,
+    message
+  });
 }
 
 // Function to inject NetPost overlay on supported sites

@@ -1,14 +1,16 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { corsMiddleware } from '../../src/middleware/cors';
 import { handleError, ValidationError } from '../../src/middleware/errorHandler';
-import { authRateLimit } from '../../src/middleware/rateLimiting';
+import { registrationRateLimit } from '../../src/middleware/securityEnhancements';
+import { validateInput } from '../../src/middleware/securityEnhancements';
 import { supabaseAdmin } from '../../src/utils/database';
-import { generateJWT } from '../../src/utils/auth';
+import { generateTokenPair } from '../../src/utils/auth';
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!corsMiddleware(req, res)) return;
-  if (!authRateLimit(req, res)) return;
+  if (!validateInput(req, res)) return;
+  if (!registrationRateLimit(req, res)) return;
 
   if (req.method !== 'POST') {
     res.status(405).json({ success: false, error: 'Method not allowed' });
@@ -22,8 +24,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       throw new ValidationError('Email and password are required');
     }
 
+    // Enhanced email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new ValidationError('Invalid email format');
+    }
+
+    // Enhanced password validation
     if (password.length < 8) {
       throw new ValidationError('Password must be at least 8 characters');
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+    if (!passwordRegex.test(password)) {
+      throw new ValidationError('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
+    }
+
+    // Validate name inputs if provided
+    if (firstName && (firstName.length > 50 || !/^[a-zA-Z\s'-]+$/.test(firstName))) {
+      throw new ValidationError('Invalid first name format');
+    }
+
+    if (lastName && (lastName.length > 50 || !/^[a-zA-Z\s'-]+$/.test(lastName))) {
+      throw new ValidationError('Invalid last name format');
     }
 
     // Check if user already exists
@@ -86,13 +109,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         updated_at: new Date().toISOString()
       });
 
-    // Generate JWT
-    const token = generateJWT(newUser.id);
+    // Generate token pair
+    const { accessToken, refreshToken } = generateTokenPair(newUser.id);
 
     res.status(201).json({
       success: true,
       data: {
-        token,
+        accessToken,
+        refreshToken,
         user: {
           id: newUser.id,
           email: newUser.email,

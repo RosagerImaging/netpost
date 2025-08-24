@@ -66,7 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Get total count for pagination
-    const { count: totalCount } = await supabaseAdmin
+    const { count } = await supabaseAdmin
       .from('inventory_items')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id);
@@ -78,8 +78,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         pagination: {
           page: parseInt(page as string),
           limit: parseInt(limit as string),
-          total: totalCount || 0,
-          totalPages: Math.ceil((totalCount || 0) / parseInt(limit as string))
+          total: count || 0,
+          totalPages: Math.ceil((count || 0) / parseInt(limit as string))
         }
       }
     });
