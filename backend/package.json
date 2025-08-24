@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "NetPost Vercel serverless backend functions",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vercel dev",
     "build": "tsc",

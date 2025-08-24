@@ -178,7 +178,87 @@ export interface DatabaseTables {
         Update: Partial<DatabaseTables['sales_analytics']['Insert']>;
     };
 }
-export declare function getUserById(id: string): Promise<any>;
-export declare function getUserByEmail(email: string): Promise<any>;
-export declare function createUser(userData: DatabaseTables['users']['Insert']): Promise<any>;
-export declare function updateUser(id: string, updates: DatabaseTables['users']['Update']): Promise<any>;
+interface QueryMetrics {
+    query: string;
+    duration: number;
+    timestamp: number;
+}
+export declare function getUserById(id: string): Promise<{
+    id: any;
+    email: any;
+    first_name: any;
+    last_name: any;
+    subscription_tier: any;
+    subscription_status: any;
+    stripe_customer_id: any;
+    trial_end_date: any;
+    subscription_end_date: any;
+    last_login_at: any;
+    created_at: any;
+    updated_at: any;
+}>;
+export declare function getUserByEmail(email: string): Promise<{
+    id: any;
+    email: any;
+    password_hash: any;
+    first_name: any;
+    last_name: any;
+    subscription_tier: any;
+    subscription_status: any;
+    stripe_customer_id: any;
+    trial_end_date: any;
+    subscription_end_date: any;
+    last_login_at: any;
+    created_at: any;
+    updated_at: any;
+} | null>;
+export declare function createUser(userData: DatabaseTables['users']['Insert']): Promise<{
+    id: any;
+    email: any;
+    first_name: any;
+    last_name: any;
+    subscription_tier: any;
+    subscription_status: any;
+    trial_end_date: any;
+    subscription_end_date: any;
+    created_at: any;
+    updated_at: any;
+}>;
+export declare function updateUser(id: string, updates: DatabaseTables['users']['Update']): Promise<{
+    id: any;
+    email: any;
+    first_name: any;
+    last_name: any;
+    subscription_tier: any;
+    subscription_status: any;
+    trial_end_date: any;
+    subscription_end_date: any;
+    updated_at: any;
+}>;
+export declare function getInventoryItemsByUser(userId: string, limit?: number, offset?: number): Promise<{
+    items: {
+        id: any;
+        title: any;
+        description: any;
+        images: any;
+        sku: any;
+        retail_price: any;
+        quantity_available: any;
+        category: any;
+        condition: any;
+        status: any;
+        created_at: any;
+        marketplace_listings: {
+            id: any;
+            platform: any;
+            status: any;
+            price: any;
+            listing_date: any;
+        }[];
+    }[];
+    total: number | null;
+}>;
+export declare function checkDatabaseHealth(): Promise<boolean>;
+export declare function getQueryMetrics(): QueryMetrics[];
+export declare function clearQueryMetrics(): void;
+export {};

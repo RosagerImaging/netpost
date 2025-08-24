@@ -1,4 +1,4 @@
-import { Platform, InventoryItem } from './inventory';
+import { Platform } from './inventory';
 
 export interface CrossListingRequest {
   id: string;

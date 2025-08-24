@@ -16,7 +16,7 @@ if (!supabaseAnonKey) {
   throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable');
 }
 
-// Service role client for admin operations
+// Service role client for admin operations with optimized configuration
 export const supabaseAdmin = createClient(
   supabaseUrl,
   supabaseServiceKey,
@@ -27,25 +27,52 @@ export const supabaseAdmin = createClient(
     },
     db: {
       schema: 'public'
+    },
+    global: {
+      headers: {
+        'Connection': 'keep-alive',
+        'Keep-Alive': 'timeout=30, max=100'
+      }
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10
+      }
     }
   }
 );
 
-// Regular client for user operations
+// Regular client for user operations with optimizations
 export const createSupabaseClient = (accessToken?: string) => {
+  const headers: Record<string, string> = {
+    'Connection': 'keep-alive',
+    'Keep-Alive': 'timeout=30, max=100'
+  };
+  
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+  
   return createClient(
     supabaseUrl,
     supabaseAnonKey,
     {
       auth: {
         autoRefreshToken: true,
-        persistSession: true
+        persistSession: true,
+        detectSessionInUrl: false,
+        flowType: 'pkce'
       },
       global: {
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+        headers
       },
       db: {
         schema: 'public'
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 10
+        }
       }
     }
   );
@@ -55,6 +82,12 @@ export const createSupabaseClient = (accessToken?: string) => {
 export const supabase = createSupabaseClient();
 
 // Database type definitions matching our schema
+// Optimized database indexes (for reference - should be in migrations)
+// CREATE INDEX CONCURRENTLY idx_users_email_active ON users(email) WHERE subscription_status != 'canceled';
+// CREATE INDEX CONCURRENTLY idx_inventory_user_status ON inventory_items(user_id, status) WHERE status = 'active';
+// CREATE INDEX CONCURRENTLY idx_listings_performance ON marketplace_listings(inventory_item_id, platform, status);
+// CREATE INDEX CONCURRENTLY idx_crosslisting_user_status ON crosslisting_requests(user_id, status, created_at);
+
 export interface DatabaseTables {
   users: {
     Row: {
@@ -233,48 +266,216 @@ export interface DatabaseTables {
   };
 }
 
-// Helper functions for database operations
+// Query performance monitoring
+interface QueryMetrics {
+  query: string;
+  duration: number;
+  timestamp: number;
+}
+
+const queryMetrics: QueryMetrics[] = [];
+
+function logSlowQuery(query: string, duration: number) {
+  if (duration > 1000) { // Log queries taking more than 1 second
+    console.warn(`Slow query detected (${duration}ms):`, query);
+    queryMetrics.push({
+      query,
+      duration,
+      timestamp: Date.now()
+    });
+    
+    // Keep only last 100 slow queries
+    if (queryMetrics.length > 100) {
+      queryMetrics.shift();
+    }
+  }
+}
+
+// Optimized helper functions for database operations
 export async function getUserById(id: string) {
+  const startTime = performance.now();
+  
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('*')
+    .select(`
+      id,
+      email,
+      first_name,
+      last_name,
+      subscription_tier,
+      subscription_status,
+      stripe_customer_id,
+      trial_end_date,
+      subscription_end_date,
+      last_login_at,
+      created_at,
+      updated_at
+    `)
     .eq('id', id)
     .single();
+    
+  const duration = performance.now() - startTime;
+  logSlowQuery(`getUserById(${id})`, duration);
   
   if (error) throw error;
   return data;
 }
 
 export async function getUserByEmail(email: string) {
+  const startTime = performance.now();
+  
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('*')
+    .select(`
+      id,
+      email,
+      password_hash,
+      first_name,
+      last_name,
+      subscription_tier,
+      subscription_status,
+      stripe_customer_id,
+      trial_end_date,
+      subscription_end_date,
+      last_login_at,
+      created_at,
+      updated_at
+    `)
     .eq('email', email)
     .single();
+    
+  const duration = performance.now() - startTime;
+  logSlowQuery(`getUserByEmail(${email})`, duration);
   
   if (error && error.code !== 'PGRST116') throw error; // PGRST116 = not found
   return data;
 }
 
 export async function createUser(userData: DatabaseTables['users']['Insert']) {
+  const startTime = performance.now();
+  
   const { data, error } = await supabaseAdmin
     .from('users')
     .insert(userData)
-    .select()
+    .select(`
+      id,
+      email,
+      first_name,
+      last_name,
+      subscription_tier,
+      subscription_status,
+      trial_end_date,
+      subscription_end_date,
+      created_at,
+      updated_at
+    `)
     .single();
+    
+  const duration = performance.now() - startTime;
+  logSlowQuery(`createUser(${userData.email})`, duration);
     
   if (error) throw error;
   return data;
 }
 
 export async function updateUser(id: string, updates: DatabaseTables['users']['Update']) {
+  const startTime = performance.now();
+  
   const { data, error } = await supabaseAdmin
     .from('users')
-    .update(updates)
+    .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', id)
-    .select()
+    .select(`
+      id,
+      email,
+      first_name,
+      last_name,
+      subscription_tier,
+      subscription_status,
+      trial_end_date,
+      subscription_end_date,
+      updated_at
+    `)
     .single();
+    
+  const duration = performance.now() - startTime;
+  logSlowQuery(`updateUser(${id})`, duration);
     
   if (error) throw error;
   return data;
+}
+
+// Bulk operations for better performance
+export async function getInventoryItemsByUser(userId: string, limit = 50, offset = 0) {
+  const startTime = performance.now();
+  
+  const { data, error, count } = await supabaseAdmin
+    .from('inventory_items')
+    .select(`
+      id,
+      title,
+      description,
+      images,
+      sku,
+      retail_price,
+      quantity_available,
+      category,
+      condition,
+      status,
+      created_at,
+      marketplace_listings!inner(
+        id,
+        platform,
+        status,
+        price,
+        listing_date
+      )
+    `, { count: 'exact' })
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+    
+  const duration = performance.now() - startTime;
+  logSlowQuery(`getInventoryItemsByUser(${userId}, ${limit}, ${offset})`, duration);
+    
+  if (error) throw error;
+  return { items: data, total: count };
+}
+
+// Connection health check
+export async function checkDatabaseHealth(): Promise<boolean> {
+  try {
+    const startTime = performance.now();
+    const { error } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .limit(1);
+    
+    const duration = performance.now() - startTime;
+    
+    if (error) {
+      console.error('Database health check failed:', error);
+      return false;
+    }
+    
+    if (duration > 5000) { // 5 seconds
+      console.warn(`Database response time is slow: ${duration}ms`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Database health check error:', error);
+    return false;
+  }
+}
+
+// Get query performance metrics
+export function getQueryMetrics(): QueryMetrics[] {
+  return [...queryMetrics];
+}
+
+// Clear query metrics
+export function clearQueryMetrics(): void {
+  queryMetrics.length = 0;
 }
