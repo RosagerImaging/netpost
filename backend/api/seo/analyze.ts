@@ -8,6 +8,7 @@ import { supabaseAdmin } from '../../src/utils/database';
 // Try to use OpenAI as primary, with fallback to mock analysis
 let openaiClient: any = null;
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { OpenAI } = require('openai');
   if (process.env.OPENAI_API_KEY) {
     openaiClient = new OpenAI({

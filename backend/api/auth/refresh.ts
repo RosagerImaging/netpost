@@ -1,10 +1,14 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { corsMiddleware } from '../../src/middleware/cors';
-import { handleError } from '../../src/middleware/errorHandler';
-import { requireAuth, generateJWT } from '../../src/utils/auth';
+import { handleError, ValidationError } from '../../src/middleware/errorHandler';
+import { apiRateLimit } from '../../src/middleware/rateLimiting';
+import { validateInput } from '../../src/middleware/securityEnhancements';
+import { verifyRefreshToken, generateTokenPair } from '../../src/utils/auth';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!corsMiddleware(req, res)) return;
+  if (!validateInput(req, res)) return;
+  if (!apiRateLimit(req, res)) return;
 
   if (req.method !== 'POST') {
     res.status(405).json({ success: false, error: 'Method not allowed' });
@@ -12,21 +16,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const user = await requireAuth(req);
+    const { refreshToken } = req.body;
 
-    // Generate new JWT token
-    const token = generateJWT(user.id);
+    if (!refreshToken) {
+      throw new ValidationError('Refresh token is required');
+    }
+
+    // Verify refresh token
+    const tokenData = await verifyRefreshToken(refreshToken);
+    if (!tokenData) {
+      res.status(401).json({
+        success: false,
+        error: { message: 'Invalid or expired refresh token', code: 'INVALID_REFRESH_TOKEN' }
+      });
+      return;
+    }
+
+    // Generate new token pair
+    const { accessToken, refreshToken: newRefreshToken } = generateTokenPair(tokenData.userId);
 
     res.status(200).json({
       success: true,
       data: {
-        token,
-        user: {
-          id: user.id,
-          email: user.email,
-          subscriptionTier: user.subscriptionTier,
-          subscriptionStatus: user.subscriptionStatus
-        }
+        accessToken,
+        refreshToken: newRefreshToken
       }
     });
   } catch (error) {

@@ -1,13 +1,28 @@
 {
   "mcpServers": {
     "vercel": {
-      "transport": {
-        "type": "http",
-        "url": "https://mcp.vercel.com/",
-        "headers": {
-          "Authorization": "Bearer h2MsATFy30cfO5mPl021yaDG"
-        }
+      "type": "http",
+      "url": "https://mcp.vercel.com/rosager-innovations/netpost"
+    },
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--read-only",
+        "--project-ref=<your_project_ref>"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "<your_personal_access_token>"
       }
+    },
+    "brave-search": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-brave-search"
+      ],
+      "env": {}
     }
   }
 }

@@ -1,0 +1,64 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": {
+          "toolName": "Edit|MultiEdit",
+          "filePaths": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd $CLAUDE_PROJECT_DIR && npx prettier --write $CLAUDE_FILE_PATHS && npx eslint --fix $CLAUDE_FILE_PATHS || true"
+          }
+        ]
+      },
+      {
+        "matcher": {
+          "toolName": "Edit|MultiEdit",
+          "filePaths": ["backend/**/*.ts", "dashboard/src/**/*.{ts,tsx}", "chrome-extension/src/**/*.{ts,tsx}"]
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd $CLAUDE_PROJECT_DIR && npm test || true",
+            "runInBackground": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": {
+          "toolName": "Edit|MultiEdit|Write"
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const path = JSON.parse(process.argv[1]).tool_input?.file_path || ''; process.exit(['.env', 'package-lock.json', '.git/', 'node_modules/'].some(p => path.includes(p)) ? 2 : 0)\" \"$(cat)\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd $CLAUDE_PROJECT_DIR && git add -A && git commit -m \"Auto-commit: $(date)\" || true"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send 'Claude Code' 'Awaiting input' || echo 'Claude needs your input'"
+          }
+        ]
+      }
+    ]
+  }
+}

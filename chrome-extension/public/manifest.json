@@ -63,7 +63,11 @@
   "externally_connectable": {
     "matches": [
       "*://localhost:3000/*",
-      "*://*.netpost.app/*"
+      "*://localhost:3001/*",
+      "*://127.0.0.1:3000/*",
+      "*://*.netpost.app/*",
+      "*://netpost.app/*",
+      "*://*.vercel.app/*"
     ]
   }
 }

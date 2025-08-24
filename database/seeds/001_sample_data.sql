@@ -1,6 +1,16 @@
 -- Sample data for development and testing
 -- Note: This should only be run in development environments
 
+-- Create category mapping table
+CREATE TABLE IF NOT EXISTS category_mappings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  source_category VARCHAR(100) NOT NULL,
+  target_category VARCHAR(200) NOT NULL,
+  platform platform_enum NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(source_category, platform)
+);
+
 -- Sample categories for inventory categorization
 INSERT INTO category_mappings (source_category, target_category, platform) VALUES
 -- Fashion categories
@@ -30,7 +40,8 @@ INSERT INTO category_mappings (source_category, target_category, platform) VALUE
 ('Collectibles', 'Collectibles', 'ebay'),
 ('Collectibles', 'Collectibles', 'mercari'),
 ('Toys', 'Toys & Hobbies', 'ebay'),
-('Toys', 'Toys', 'mercari');
+('Toys', 'Toys', 'mercari')
+ON CONFLICT (source_category, platform) DO NOTHING;
 
 -- Create sample platform configurations
 CREATE TABLE IF NOT EXISTS platform_configurations (

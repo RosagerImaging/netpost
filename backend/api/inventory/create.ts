@@ -2,11 +2,13 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { corsMiddleware } from '../../src/middleware/cors';
 import { handleError, ValidationError } from '../../src/middleware/errorHandler';
 import { apiRateLimit } from '../../src/middleware/rateLimiting';
+import { validateInput } from '../../src/middleware/securityEnhancements';
 import { requireAuth } from '../../src/utils/auth';
 import { supabaseAdmin } from '../../src/utils/database';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!corsMiddleware(req, res)) return;
+  if (!validateInput(req, res)) return;
   if (!apiRateLimit(req, res)) return;
 
   if (req.method !== 'POST') {
@@ -37,17 +39,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       dimensions
     } = req.body;
 
-    // Validate required fields
+    // Enhanced input validation
     if (!title || !description || !images || !sku || !category || !condition) {
       throw new ValidationError('Missing required fields: title, description, images, sku, category, condition');
+    }
+
+    // Validate input lengths and formats
+    if (title.length > 255 || title.length < 3) {
+      throw new ValidationError('Title must be between 3 and 255 characters');
+    }
+
+    if (description.length > 5000 || description.length < 10) {
+      throw new ValidationError('Description must be between 10 and 5000 characters');
+    }
+
+    if (!/^[A-Za-z0-9-_]+$/.test(sku)) {
+      throw new ValidationError('SKU must contain only alphanumeric characters, hyphens, and underscores');
+    }
+
+    if (category.length > 100) {
+      throw new ValidationError('Category must be less than 100 characters');
     }
 
     if (!Array.isArray(images) || images.length === 0) {
       throw new ValidationError('At least one image is required');
     }
 
-    if (costBasis < 0 || retailPrice <= 0) {
-      throw new ValidationError('Cost basis must be non-negative and retail price must be positive');
+    // Enhanced numeric validation
+    const parsedCostBasis = parseFloat(costBasis) || 0;
+    const parsedRetailPrice = parseFloat(retailPrice);
+    
+    if (parsedCostBasis < 0 || parsedCostBasis > 999999.99) {
+      throw new ValidationError('Cost basis must be between 0 and 999,999.99');
+    }
+    
+    if (parsedRetailPrice <= 0 || parsedRetailPrice > 999999.99) {
+      throw new ValidationError('Retail price must be between 0.01 and 999,999.99');
     }
 
     if (quantityTotal <= 0 || quantityAvailable < 0 || quantityAvailable > quantityTotal) {
@@ -76,8 +103,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         images,
         sku: sku.trim(),
         barcode: barcode?.trim() || null,
-        cost_basis: parseFloat(costBasis) || 0,
-        retail_price: parseFloat(retailPrice),
+        cost_basis: parsedCostBasis,
+        retail_price: parsedRetailPrice,
         quantity_total: parseInt(quantityTotal),
         quantity_available: parseInt(quantityAvailable),
         category: category.trim(),
