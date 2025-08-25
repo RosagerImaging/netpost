@@ -47,7 +47,7 @@ async function handler(req, res) {
             throw new Error('Failed to fetch inventory items');
         }
         // Get total count for pagination
-        const { count: totalCount } = await database_1.supabaseAdmin
+        const { count } = await database_1.supabaseAdmin
             .from('inventory_items')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', user.id);
@@ -58,8 +58,8 @@ async function handler(req, res) {
                 pagination: {
                     page: parseInt(page),
                     limit: parseInt(limit),
-                    total: totalCount || 0,
-                    totalPages: Math.ceil((totalCount || 0) / parseInt(limit))
+                    total: count || 0,
+                    totalPages: Math.ceil((count || 0) / parseInt(limit))
                 }
             }
         });
