@@ -10,10 +10,10 @@
         "-y",
         "@supabase/mcp-server-supabase@latest",
         "--read-only",
-        "--project-ref=<your_project_ref>"
+        "--project-ref=jtqzezsdbflalvgluegz"
       ],
       "env": {
-        "SUPABASE_ACCESS_TOKEN": "<your_personal_access_token>"
+        "SUPABASE_ACCESS_TOKEN": "sbp_ee9c3e7a152a7c9160683018325ecfa21fcd9d4e"
       }
     },
     "brave-search": {
